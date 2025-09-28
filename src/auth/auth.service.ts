@@ -9,21 +9,54 @@ import * as bcrypt from 'bcrypt';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { ValidationMessages } from '../common/validation-messages';
+import { User } from '../users/entities/user.entity';
+import { UserToken, TokenType } from './entities/user-token.entity';
+import { ConfigService } from '@nestjs/config';
+import { DataSource, EntityManager } from 'typeorm';
 
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
+    private configService: ConfigService,
+    private dataSource: DataSource,
   ) {}
 
-  async validateUser(email: string, pass: string): Promise<any> {
+  private async _generateAndSaveToken(
+    user: User,
+    manager: EntityManager,
+  ): Promise<string> {
+    const payload = { email: user.email, sub: user.uuid }; // Use UUID in JWT payload
+    const token = this.jwtService.sign(payload);
+    const expiresIn = this.configService.get<string>('JWT_EXPIRATION', '1h');
+
+    // Calcula la fecha de expiración
+    const expiresAt = new Date();
+    const unit = expiresIn.slice(-1);
+    const value = parseInt(expiresIn.slice(0, -1), 10);
+    if (unit === 's') expiresAt.setSeconds(expiresAt.getSeconds() + value);
+    if (unit === 'h') expiresAt.setHours(expiresAt.getHours() + value);
+    if (unit === 'd') expiresAt.setDate(expiresAt.getDate() + value);
+
+    const tokenHash = token; // En una aplicación real, deberías hashear el token
+
+    const userToken = manager.create(UserToken, {
+      userId: user.id,
+      tokenType: TokenType.ACCESS,
+      tokenHash: tokenHash,
+      expiresAt: expiresAt,
+    });
+
+    await manager.save(userToken);
+
+    return token;
+  }
+
+  async validateUser(email: string, pass: string): Promise<User | null> {
     const user = await this.usersService.findOneByEmail(email);
     if (user && (await bcrypt.compare(pass, user.password))) {
-      // Excluir la contraseña del objeto retornado por seguridad
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { password, ...result } = user;
-      return result;
+      return user;
     }
     return null;
   }
@@ -33,12 +66,17 @@ export class AuthService {
     if (!user) {
       throw new UnauthorizedException(ValidationMessages.INVALID_CREDENTIALS);
     }
-    const payload = { email: user.email, sub: user.id };
+
+    const accessToken = await this._generateAndSaveToken(
+      user,
+      this.dataSource.manager,
+    );
+
     return {
-      access_token: this.jwtService.sign(payload),
+      access_token: accessToken,
       message: ValidationMessages.LOGIN_SUCCESS,
       user: {
-        id: user.id,
+        uuid: user.uuid,
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
@@ -57,19 +95,32 @@ export class AuthService {
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(registerDto.password, salt);
 
-    const newUser = await this.usersService.create({
-      email: registerDto.email,
-      password: hashedPassword,
-      firstName: registerDto.firstName,
-      lastName: registerDto.lastName,
+    const result = await this.dataSource.transaction(async (manager) => {
+      const newUser = manager.create(User, {
+        email: registerDto.email,
+        password: hashedPassword,
+        firstName: registerDto.firstName,
+        lastName: registerDto.lastName,
+      });
+      await manager.save(newUser);
+
+      const accessToken = await this._generateAndSaveToken(newUser, manager);
+
+      return {
+        accessToken,
+        user: newUser,
+      };
     });
 
-    // Excluir la contraseña del objeto retornado por seguridad
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...result } = newUser;
     return {
+      access_token: result.accessToken,
       message: ValidationMessages.REGISTER_SUCCESS,
-      user: result,
+      user: {
+        uuid: result.user.uuid,
+        email: result.user.email,
+        firstName: result.user.firstName,
+        lastName: result.user.lastName,
+      },
     };
   }
 }
