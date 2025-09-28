@@ -10,7 +10,7 @@ import { User } from './users/entities/user.entity';
 @Module({
   imports: [
     ConfigModule.forRoot({
-      isGlobal: true, // Makes the ConfigService available throughout the app
+      isGlobal: true, // Hace que el ConfigService esté disponible en toda la aplicación
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -23,7 +23,7 @@ import { User } from './users/entities/user.entity';
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_NAME'),
         entities: [User],
-        synchronize: true, // Be cautious with this in production
+        synchronize: true, // Ten cuidado con esto en producción - solo para desarrollo
       }),
     }),
     AuthModule,

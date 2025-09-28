@@ -8,15 +8,15 @@ async function bootstrap() {
 
   const configService = app.get(ConfigService);
 
-  // Enable CORS
+  // Habilitar CORS
   app.enableCors();
 
-  // Use global validation pipe
+  // Usar pipe de validación global
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true, // Strip away properties that do not have any decorators
-      forbidNonWhitelisted: true, // Throw an error if non-whitelisted values are provided
-      transform: true, // Automatically transform payloads to be objects typed according to their DTO classes
+      whitelist: true, // Eliminar propiedades que no tienen decoradores
+      forbidNonWhitelisted: true, // Lanzar error si se proporcionan valores no permitidos
+      transform: true, // Transformar automáticamente los payloads a objetos tipados según sus clases DTO
     }),
   );
 

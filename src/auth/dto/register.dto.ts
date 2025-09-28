@@ -1,20 +1,21 @@
 import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
+import { ValidationMessages } from '../../common/validation-messages';
 
 export class RegisterDto {
-  @IsString()
-  @IsNotEmpty()
+  @IsString({ message: ValidationMessages.INVALID_FORMAT })
+  @IsNotEmpty({ message: ValidationMessages.FIRST_NAME_REQUIRED })
   firstName: string;
 
-  @IsString()
-  @IsNotEmpty()
+  @IsString({ message: ValidationMessages.INVALID_FORMAT })
+  @IsNotEmpty({ message: ValidationMessages.LAST_NAME_REQUIRED })
   lastName: string;
 
-  @IsEmail()
-  @IsNotEmpty()
+  @IsEmail({}, { message: ValidationMessages.EMAIL_INVALID })
+  @IsNotEmpty({ message: ValidationMessages.EMAIL_REQUIRED })
   email: string;
 
-  @IsString()
-  @IsNotEmpty()
-  @MinLength(8, { message: 'Password must be at least 8 characters long' })
+  @IsString({ message: ValidationMessages.INVALID_FORMAT })
+  @IsNotEmpty({ message: ValidationMessages.PASSWORD_REQUIRED })
+  @MinLength(8, { message: ValidationMessages.PASSWORD_TOO_SHORT })
   password: string;
 }

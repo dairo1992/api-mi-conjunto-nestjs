@@ -19,10 +19,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: { sub: number; email: string }) {
-    // The payload is the decoded JWT.
-    // We can use the user ID (`sub`) to fetch the full user object.
+    // El payload es el JWT decodificado.
+    // Podemos usar el ID del usuario (`sub`) para obtener el objeto usuario completo.
     const user = await this.usersService.findOneById(payload.sub);
-    // Passport will attach this user object to the request object.
+    // Passport adjuntará este objeto usuario al objeto request.
     return user;
   }
 }

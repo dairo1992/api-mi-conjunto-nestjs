@@ -8,14 +8,18 @@ export class AppController {
 
   @UseGuards(JwtAuthGuard)
   @Get()
-  getHello(): string {
-    return this.appService.getHello();
+  getHello(): object {
+    return {
+      message: this.appService.getHello(),
+      status: 'success',
+      timestamp: new Date().toISOString(),
+    };
   }
 
   @UseGuards(JwtAuthGuard)
   @Get('profile')
   getProfile(@Request() req: any) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    // Retorna la información del usuario autenticado
     return req.user;
   }
 }

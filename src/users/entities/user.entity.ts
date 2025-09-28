@@ -63,6 +63,7 @@ export class User {
 
   @BeforeInsert()
   generateUuid() {
+    // Generar UUID único antes de insertar el usuario en la base de datos
     if (!this.uuid) {
       this.uuid = uuidv4();
     }

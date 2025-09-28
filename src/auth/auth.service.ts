@@ -8,6 +8,7 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import { ValidationMessages } from '../common/validation-messages';
 
 @Injectable()
 export class AuthService {
@@ -19,6 +20,7 @@ export class AuthService {
   async validateUser(email: string, pass: string): Promise<any> {
     const user = await this.usersService.findOneByEmail(email);
     if (user && (await bcrypt.compare(pass, user.password))) {
+      // Excluir la contraseña del objeto retornado por seguridad
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { password, ...result } = user;
       return result;
@@ -29,11 +31,18 @@ export class AuthService {
   async login(loginDto: LoginDto) {
     const user = await this.validateUser(loginDto.email, loginDto.password);
     if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException(ValidationMessages.INVALID_CREDENTIALS);
     }
     const payload = { email: user.email, sub: user.id };
     return {
       access_token: this.jwtService.sign(payload),
+      message: ValidationMessages.LOGIN_SUCCESS,
+      user: {
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+      },
     };
   }
 
@@ -42,7 +51,7 @@ export class AuthService {
       registerDto.email,
     );
     if (existingUser) {
-      throw new ConflictException('Email already registered');
+      throw new ConflictException(ValidationMessages.EMAIL_ALREADY_EXISTS);
     }
 
     const salt = await bcrypt.genSalt();
@@ -55,8 +64,12 @@ export class AuthService {
       lastName: registerDto.lastName,
     });
 
+    // Excluir la contraseña del objeto retornado por seguridad
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...result } = newUser;
-    return result;
+    return {
+      message: ValidationMessages.REGISTER_SUCCESS,
+      user: result,
+    };
   }
 }
