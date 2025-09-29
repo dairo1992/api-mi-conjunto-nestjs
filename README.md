@@ -216,6 +216,65 @@ La aplicación maneja una entidad `User` con los siguientes campos:
 4. Push a la rama (`git push origin feature/AmazingFeature`)
 5. Abre un Pull Request
 
+## Procedimientos de almacenado
+
+Procedimientos por Categoría:
+👤 Gestión de Usuarios:
+
+sp_create_user - Crear usuario global
+sp_add_user_to_company - Vincular usuario a empresa con roles y sedes
+sp_deactivate_company_user - Desactivar usuario de empresa
+sp_get_company_users - Listar usuarios con filtros
+sp_get_user_permissions - Obtener permisos de un usuario
+
+🏢 Gestión de Empresas:
+
+sp_create_company - Crear empresa con validaciones de plan
+sp_get_company_dashboard - Dashboard con estadísticas
+sp_transfer_company_ownership - Transferir propiedad
+
+🏪 Gestión de Sedes:
+
+sp_create_branch - Crear sede validando límites
+
+🎭 Gestión de Roles:
+
+sp_create_default_roles - Crear roles del sistema (Admin, Usuario, Invitado)
+sp_create_role - Crear rol personalizado
+sp_update_role - Actualizar rol y permisos
+
+🔐 Seguridad y Permisos:
+
+sp_check_user_permission - Verificar si usuario tiene permiso
+sp_create_user_session - Crear sesión de login
+sp_validate_session - Validar sesión activa
+sp_logout_session - Cerrar sesión
+sp_clean_expired_sessions - Limpiar sesiones vencidas
+
+📊 Monitoreo:
+
+sp_check_plan_limits - Verificar límites del plan
+
+✨ Características Principales:
+1. Validaciones Robustas:
+
+✅ Verifica existencia de registros
+✅ Valida límites según el plan
+✅ Previene duplicados
+✅ Maneja errores con EXIT HANDLER
+
+2. Transacciones Seguras:
+
+🔒 Usa START TRANSACTION y COMMIT
+🔄 ROLLBACK automático en errores
+📝 Mensajes claros de estado
+
+3. Auditoría Completa:
+
+📊 Registra todas las operaciones
+👤 Rastrea quién hizo cada cambio
+🕐 Timestamps automáticos
+
 ## Licencia
 
 Este proyecto está bajo la Licencia MIT.
