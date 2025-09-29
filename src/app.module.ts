@@ -7,6 +7,12 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { User } from './users/entities/user.entity';
 import { UserToken } from './auth/entities/user-token.entity';
+import { CompaniesModule } from './companies/companies.module';
+import { BranchesModule } from './branches/branches.module';
+import { CompanyRolesModule } from './company-roles/company-roles.module';
+import { CompanyUsersModule } from './company-users/company-users.module';
+import { UserCompanyRolesModule } from './user-company-roles/user-company-roles.module';
+import { AuditLogsModule } from './audit-logs/audit-logs.module';
 
 @Module({
   imports: [
@@ -29,6 +35,12 @@ import { UserToken } from './auth/entities/user-token.entity';
     }),
     AuthModule,
     UsersModule,
+    CompaniesModule,
+    BranchesModule,
+    CompanyRolesModule,
+    CompanyUsersModule,
+    UserCompanyRolesModule,
+    AuditLogsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
